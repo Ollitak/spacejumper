@@ -1,6 +1,11 @@
 import platform from "../img/platform_250x100.png"
 import background from "../img/arizona_background_1900x800.png"
-import { rejectSeries } from "async"
+import runRight1 from "../img/character/run_right/armor__0012_run_1.png"
+import runRight2 from "../img/character/run_right/armor__0013_run_2.png"
+import runRight3 from "../img/character/run_right/armor__0014_run_3.png"
+import runRight4 from "../img/character/run_right/armor__0015_run_4.png"
+import runRight5 from "../img/character/run_right/armor__0016_run_5.png"
+import runRight6 from "../img/character/run_right/armor__0017_run_6.png"
  
 const CANVA_WIDTH = 1600
 const CANVA_HEIGHT = 800
@@ -84,6 +89,12 @@ function startGame(ctx) {
       } 
     })
 
+    if(keysPressed.right) {
+      player.setSpriteStatus("runRight")
+    } else {
+      player.setSpriteStatus("stand")
+    }
+
     // win
     if (score > 2000) {
       console.log("YOU WIN")
@@ -137,12 +148,26 @@ class Player {
       x,
       y
     }
-    this.width = 70
-    this.height = 70
+    this.width = 80
+    this.height = 160
     this.velocity = {
       x: 0,
       y: 0
     };
+
+    this.sprites = {
+      right: {
+        a: imageFactory(runRight1),
+        b: imageFactory(runRight2),
+        c: imageFactory(runRight3),
+        d: imageFactory(runRight4),
+        e: imageFactory(runRight5),
+        f: imageFactory(runRight6),
+      }
+    }
+    
+    this.spriteStatus = "stand" // ENUM: stand, runRight, runLeft, jump
+    this.frame = 1
   }
 
   update(ctx) {
@@ -152,20 +177,29 @@ class Player {
     this.draw(ctx)
     
     this.velocity.y = this.velocity.y + GRAVITY
-
-    // Apply gravity and stop velocity on ground
-    /*
-    if (this.position.y + this.height + this.velocity.y <= CANVA_HEIGHT) {
-      this.velocity.y = this.velocity.y + GRAVITY
-    } else {
-      this.velocity.y = 0
-    }
-    */
+    this.frame++
+    if (this.frame === 49) this.frame = 1
   }
 
   draw(ctx) {
-    ctx.fillStyle = "red"
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height); // x, y, width, height
+    if (this.spriteStatus === "stand") {
+      ctx.drawImage(this.sprites.right.a, this.position.x, this.position.y, this.width, this.height)
+    } else if (this.spriteStatus === "runRight") {
+      if (this.frame < 8) {
+        ctx.drawImage(this.sprites.right.a, this.position.x, this.position.y, this.width, this.height)
+      } else if (this.frame < 16) {
+        ctx.drawImage(this.sprites.right.b, this.position.x, this.position.y, this.width, this.height)
+      } else if (this.frame < 24) {
+        ctx.drawImage(this.sprites.right.c, this.position.x, this.position.y, this.width, this.height)
+      } else if (this.frame < 32) {
+        ctx.drawImage(this.sprites.right.d, this.position.x, this.position.y, this.width, this.height)
+      } else if (this.frame < 40) {
+        ctx.drawImage(this.sprites.right.e, this.position.x, this.position.y, this.width, this.height)
+      } else {
+        ctx.drawImage(this.sprites.right.f, this.position.x, this.position.y, this.width, this.height)
+      }
+    }
+    
   }
 
   setYVelocity(velocity) {
@@ -179,6 +213,10 @@ class Player {
   jump() {
     this.velocity.y = -JUMP_POWER
   }
+
+  setSpriteStatus(status){
+    this.spriteStatus = status
+  }
 }
 
 
@@ -188,8 +226,8 @@ class Platform {
       x,
       y
     }
-    this.width = 250
-    this.height = 10
+    this.width = 400
+    this.height = 33
 
     this.image = image
   }
@@ -201,7 +239,7 @@ class Platform {
   draw(ctx) {
     //ctx.fillStyle = "black"
     //ctx.fillRect(this.position.x, this.position.y, this.width, this.height); // x, y, width, height
-    ctx.drawImage(this.image, this.position.x, this.position.y)
+    ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height)
   }
 }
 
