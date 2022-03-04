@@ -89,10 +89,12 @@ function startGame(ctx) {
       platform.draw(ctx)
 
       // Collision detection between player and platform
-      if (player.position.y + player.height <= platform.position.y &&
-          player.position.y + player.height + player.velocity.y >= platform.position.y &&
-          player.position.x + player.width > platform.position.x &&
-          player.position.x < platform.position.x + platform.width) {
+      // First 2 number adjust the gap between player and platform => higher the number, smaller the gap
+      // Second 2 number adjust where player falls off from platform => higher the number, earlier fall
+      if (player.position.y + player.height <= platform.position.y + 12 &&
+          player.position.y + player.height + player.velocity.y >= platform.position.y + 12 &&
+          player.position.x + player.width > platform.position.x + 20 &&
+          player.position.x < platform.position.x + platform.width - 20) {
             player.setYVelocity(0)
             
             if(player.spriteStatus === "jumpRight") {
@@ -152,7 +154,7 @@ function startGame(ctx) {
   addEventListener("keydown", function({ keyCode }) {
     switch (keyCode){
       case (87):
-        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
+        if(player.spriteStatus !== "jumpRight" && player.spriteStatus !== "jumpLeft" && player.velocity.y === 1) {
           player.jump();
           if(player.spriteStatus === "standRight" || player.spriteStatus === "runRight") {
             player.setSpriteStatus("jumpRight")
