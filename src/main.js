@@ -1,17 +1,29 @@
 import platform from "../img/platform_250x100.png"
 import background from "../img/arizona_background_1900x800.png"
+
 import runRight1 from "../img/character/run_right/armor__0012_run_1.png"
 import runRight2 from "../img/character/run_right/armor__0013_run_2.png"
 import runRight3 from "../img/character/run_right/armor__0014_run_3.png"
 import runRight4 from "../img/character/run_right/armor__0015_run_4.png"
 import runRight5 from "../img/character/run_right/armor__0016_run_5.png"
 import runRight6 from "../img/character/run_right/armor__0017_run_6.png"
+
 import runLeft1 from "../img/character/run_left/armor__0012_runleft_1.png"
 import runLeft2 from "../img/character/run_left/armor__0013_runleft_2.png"
 import runLeft3 from "../img/character/run_left/armor__0014_runleft_3.png"
 import runLeft4 from "../img/character/run_left/armor__0015_runleft_4.png"
 import runLeft5 from "../img/character/run_left/armor__0016_runleft_5.png"
 import runLeft6 from "../img/character/run_left/armor__0017_runleft_6.png"
+
+import jumpRight1 from "../img/character/jump_right/armor__0027_jump_1.png"
+import jumpRight2 from "../img/character/jump_right/armor__0028_jump_2.png"
+import jumpRight3 from "../img/character/jump_right/armor__0029_jump_3.png"
+import jumpRight4 from "../img/character/jump_right/armor__0030_jump_4.png"
+
+import jumpLeft1 from "../img/character/jump_left/armor__0027_jump_1.png"
+import jumpLeft2 from "../img/character/jump_left/armor__0028_jump_2.png"
+import jumpLeft3 from "../img/character/jump_left/armor__0029_jump_3.png"
+import jumpLeft4 from "../img/character/jump_left/armor__0030_jump_4.png"
 
  
 const CANVA_WIDTH = 1600
@@ -71,7 +83,15 @@ function startGame(ctx) {
           player.position.y + player.height + player.velocity.y >= platform.position.y &&
           player.position.x + player.width > platform.position.x &&
           player.position.x < platform.position.x + platform.width) {
-          player.setYVelocity(0)
+            player.setYVelocity(0)
+            
+            if(player.spriteStatus === "jumpRight") {
+              player.spriteStatus = "standRight"
+            }
+            
+            if(player.spriteStatus === "jumpLeft") {
+              player.spriteStatus = "standLeft"
+            }
         }
 
       /* 
@@ -96,11 +116,11 @@ function startGame(ctx) {
       } 
     })
 
-    if(keysPressed.right) {
+    if(keysPressed.right && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
       player.setSpriteStatus("runRight")
-    } else if(keysPressed.left) {
+    } else if(keysPressed.left && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
       player.setSpriteStatus("runLeft")
-    }
+    }    
 
     // win
     if (score > 2000) {
@@ -123,6 +143,11 @@ function startGame(ctx) {
     switch (keyCode){
       case (87):
         player.jump();
+        if(player.spriteStatus === "standRight" || player.spriteStatus === "runRight") {
+          player.setSpriteStatus("jumpRight")
+        } else {
+          player.setSpriteStatus("jumpLeft")
+        }
         break
       case (68):
         keysPressed.right = true;
@@ -139,11 +164,11 @@ function startGame(ctx) {
     switch(keyCode){
       case (68):
         keysPressed.right = false;
-        player.setSpriteStatus("standRight")
+        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft" ) player.setSpriteStatus("standRight")
         break
       case (65):
         keysPressed.left = false;
-        player.setSpriteStatus("standLeft")
+        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") player.setSpriteStatus("standLeft")
         break
       default:
         null
@@ -180,6 +205,18 @@ class Player {
         d: imageFactory(runLeft4),
         e: imageFactory(runLeft5),
         f: imageFactory(runLeft6)
+      },
+      jumpRight: {
+        a: imageFactory(jumpRight1),
+        b: imageFactory(jumpRight2),
+        c: imageFactory(jumpRight3),
+        d: imageFactory(jumpRight4),
+      },
+      jumpLeft: {
+        a: imageFactory(jumpLeft1),
+        b: imageFactory(jumpLeft2),
+        c: imageFactory(jumpLeft3),
+        d: imageFactory(jumpLeft4),
       }
     }
     
@@ -234,6 +271,28 @@ class Player {
           ctx.drawImage(this.sprites.left.e, this.position.x, this.position.y, this.width, this.height)
         } else {
           ctx.drawImage(this.sprites.left.f, this.position.x, this.position.y, this.width, this.height)
+        }
+        break
+      case "jumpRight":
+        if (this.frame < 12) {
+          ctx.drawImage(this.sprites.jumpRight.a, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 24) {
+          ctx.drawImage(this.sprites.jumpRight.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 36) {
+          ctx.drawImage(this.sprites.jumpRight.c, this.position.x, this.position.y, this.width, this.height)
+        } else {
+          ctx.drawImage(this.sprites.jumpRight.d, this.position.x, this.position.y, this.width, this.height)
+        }
+        break
+      case "jumpLeft":
+        if (this.frame < 12) {
+          ctx.drawImage(this.sprites.jumpLeft.a, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 24) {
+          ctx.drawImage(this.sprites.jumpLeft.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 36) {
+          ctx.drawImage(this.sprites.jumpLeft.c, this.position.x, this.position.y, this.width, this.height)
+        } else {
+          ctx.drawImage(this.sprites.jumpLeft.d, this.position.x, this.position.y, this.width, this.height)
         }
         break
       default:
