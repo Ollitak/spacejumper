@@ -1,4 +1,4 @@
-//import platform from "./img/platform_scaled.png"
+import platform from "../img/platform_scaled.png"
 
 const CANVA_WIDTH = 1900
 const CANVA_HEIGHT = 800
@@ -26,9 +26,7 @@ function startGame(ctx) {
   player.draw(ctx)
 
   const platform_image = new Image()
-  //platform_image.src = platform
-
-  //console.log(platform_image)
+  platform_image.src = platform
 
   const platform1 = new Platform({x: 200, y: 150}, platform_image)
   const platform2 = new Platform({x: 600, y: 300}, platform_image)
@@ -169,7 +167,7 @@ class Player {
 
 
 class Platform {
-  constructor({x, y, image}) {
+  constructor({ x, y }, image) {
     this.position = {
       x,
       y
@@ -185,9 +183,9 @@ class Platform {
   }
 
   draw(ctx) {
-    ctx.fillStyle = "black"
-    ctx.fillRect(this.position.x, this.position.y, this.width, this.height); // x, y, width, height
-    //ctx.drawImage(this.image, this.position.x, this.position.y)
+    //ctx.fillStyle = "black"
+    //ctx.fillRect(this.position.x, this.position.y, this.width, this.height); // x, y, width, height
+    ctx.drawImage(this.image, this.position.x, this.position.y)
   }
 }
 
