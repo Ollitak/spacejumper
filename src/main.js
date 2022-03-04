@@ -6,6 +6,13 @@ import runRight3 from "../img/character/run_right/armor__0014_run_3.png"
 import runRight4 from "../img/character/run_right/armor__0015_run_4.png"
 import runRight5 from "../img/character/run_right/armor__0016_run_5.png"
 import runRight6 from "../img/character/run_right/armor__0017_run_6.png"
+import runLeft1 from "../img/character/run_left/armor__0012_runleft_1.png"
+import runLeft2 from "../img/character/run_left/armor__0013_runleft_2.png"
+import runLeft3 from "../img/character/run_left/armor__0014_runleft_3.png"
+import runLeft4 from "../img/character/run_left/armor__0015_runleft_4.png"
+import runLeft5 from "../img/character/run_left/armor__0016_runleft_5.png"
+import runLeft6 from "../img/character/run_left/armor__0017_runleft_6.png"
+
  
 const CANVA_WIDTH = 1600
 const CANVA_HEIGHT = 800
@@ -91,8 +98,8 @@ function startGame(ctx) {
 
     if(keysPressed.right) {
       player.setSpriteStatus("runRight")
-    } else {
-      player.setSpriteStatus("stand")
+    } else if(keysPressed.left) {
+      player.setSpriteStatus("runLeft")
     }
 
     // win
@@ -132,9 +139,11 @@ function startGame(ctx) {
     switch(keyCode){
       case (68):
         keysPressed.right = false;
+        player.setSpriteStatus("standRight")
         break
       case (65):
         keysPressed.left = false;
+        player.setSpriteStatus("standLeft")
         break
       default:
         null
@@ -162,11 +171,19 @@ class Player {
         c: imageFactory(runRight3),
         d: imageFactory(runRight4),
         e: imageFactory(runRight5),
-        f: imageFactory(runRight6),
+        f: imageFactory(runRight6)
+      },
+      left: {
+        a: imageFactory(runLeft1),
+        b: imageFactory(runLeft2),
+        c: imageFactory(runLeft3),
+        d: imageFactory(runLeft4),
+        e: imageFactory(runLeft5),
+        f: imageFactory(runLeft6)
       }
     }
     
-    this.spriteStatus = "stand" // ENUM: stand, runRight, runLeft, jump
+    this.spriteStatus = "standRight" // ENUM: standRight, standLeft runRight, runLeft, jump
     this.frame = 1
   }
 
@@ -182,25 +199,48 @@ class Player {
   }
 
   draw(ctx) {
-    if (this.spriteStatus === "stand") {
-      ctx.drawImage(this.sprites.right.a, this.position.x, this.position.y, this.width, this.height)
-    } else if (this.spriteStatus === "runRight") {
-      if (this.frame < 8) {
+    switch(this.spriteStatus){
+      case "standRight":
         ctx.drawImage(this.sprites.right.a, this.position.x, this.position.y, this.width, this.height)
-      } else if (this.frame < 16) {
-        ctx.drawImage(this.sprites.right.b, this.position.x, this.position.y, this.width, this.height)
-      } else if (this.frame < 24) {
-        ctx.drawImage(this.sprites.right.c, this.position.x, this.position.y, this.width, this.height)
-      } else if (this.frame < 32) {
-        ctx.drawImage(this.sprites.right.d, this.position.x, this.position.y, this.width, this.height)
-      } else if (this.frame < 40) {
-        ctx.drawImage(this.sprites.right.e, this.position.x, this.position.y, this.width, this.height)
-      } else {
-        ctx.drawImage(this.sprites.right.f, this.position.x, this.position.y, this.width, this.height)
-      }
+        break
+      case "standLeft":
+        ctx.drawImage(this.sprites.left.a, this.position.x, this.position.y, this.width, this.height)
+        break
+      case "runRight":
+        if (this.frame < 8) {
+          ctx.drawImage(this.sprites.right.a, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 16) {
+          ctx.drawImage(this.sprites.right.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 24) {
+          ctx.drawImage(this.sprites.right.c, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 32) {
+          ctx.drawImage(this.sprites.right.d, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 40) {
+          ctx.drawImage(this.sprites.right.e, this.position.x, this.position.y, this.width, this.height)
+        } else {
+          ctx.drawImage(this.sprites.right.f, this.position.x, this.position.y, this.width, this.height)
+        }
+        break
+      case "runLeft":
+        if (this.frame < 8) {
+          ctx.drawImage(this.sprites.left.a, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 16) {
+          ctx.drawImage(this.sprites.left.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 24) {
+          ctx.drawImage(this.sprites.left.c, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 32) {
+          ctx.drawImage(this.sprites.left.d, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 40) {
+          ctx.drawImage(this.sprites.left.e, this.position.x, this.position.y, this.width, this.height)
+        } else {
+          ctx.drawImage(this.sprites.left.f, this.position.x, this.position.y, this.width, this.height)
+        }
+        break
+      default:
+        console.log("draw switch-case defaulted...")
     }
-    
   }
+  
 
   setYVelocity(velocity) {
     this.velocity.y = velocity
