@@ -142,11 +142,13 @@ function startGame(ctx) {
   addEventListener("keydown", function({ keyCode }) {
     switch (keyCode){
       case (87):
-        player.jump();
-        if(player.spriteStatus === "standRight" || player.spriteStatus === "runRight") {
-          player.setSpriteStatus("jumpRight")
-        } else {
-          player.setSpriteStatus("jumpLeft")
+        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
+          player.jump();
+          if(player.spriteStatus === "standRight" || player.spriteStatus === "runRight") {
+            player.setSpriteStatus("jumpRight")
+          } else {
+            player.setSpriteStatus("jumpLeft")
+          }
         }
         break
       case (68):
