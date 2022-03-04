@@ -1,4 +1,4 @@
-import platform from "../img/platform_scaled.png"
+import platform from "./img/platform_scaled.png"
 
 const CANVA_WIDTH = 1900
 const CANVA_HEIGHT = 800
@@ -148,7 +148,7 @@ class Player {
   }
 
   draw(ctx) {
-    ctx.fillStyle = "blue"
+    ctx.fillStyle = "red"
     ctx.fillRect(this.position.x, this.position.y, this.width, this.height); // x, y, width, height
   }
 
