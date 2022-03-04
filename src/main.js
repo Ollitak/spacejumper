@@ -1,5 +1,15 @@
-import platform from "../img/platform_250x100.png"
+import platformLarge from "../img/platforms/tile1.png"
+import platformSmall from "../img/platforms/tile2.png"
+
 import background from "../img/arizona_background_1900x800.png"
+
+import idleRight1 from "../img/character/idle_right/armor__0000_idle_1.png"
+import idleRight2 from "../img/character/idle_right/armor__0001_idle_2.png"
+import idleRight3 from "../img/character/idle_right/armor__0002_idle_3.png"
+
+import idleLeft1 from "../img/character/idle_left/armor__0000_idle_1.png"
+import idleLeft2 from "../img/character/idle_left/armor__0001_idle_2.png"
+import idleLeft3 from "../img/character/idle_left/armor__0002_idle_3.png"
 
 import runRight1 from "../img/character/run_right/armor__0012_run_1.png"
 import runRight2 from "../img/character/run_right/armor__0013_run_2.png"
@@ -56,9 +66,9 @@ function startGame(ctx) {
 
     player = new Player({x: 120, y: 300})
 
-    platform1 = new Platform({x: 50, y: 500}, imageFactory(platform))
-    platform2 = new Platform({x: 800, y: 550}, imageFactory(platform))
-    platform3 = new Platform({x: 1200, y: 650}, imageFactory(platform))
+    platform1 = new Platform({x: 50, y: 500}, {width: 513, height: 138}, imageFactory(platformLarge))
+    platform2 = new Platform({x: 800, y: 550}, {width: 263, height: 161}, imageFactory(platformSmall))
+    platform3 = new Platform({x: 1200, y: 650}, {width: 513, height: 138}, imageFactory(platformLarge))
     platforms = [platform1, platform2, platform3]
     
     background1 = new Generic({ x: 0, y: 0 }, imageFactory(background) )
@@ -192,6 +202,16 @@ class Player {
     };
 
     this.sprites = {
+      standRight: {
+        a: imageFactory(idleRight1),
+        b: imageFactory(idleRight2),
+        c: imageFactory(idleRight3),
+      },
+      standLeft: {
+        a: imageFactory(idleLeft1),
+        b: imageFactory(idleLeft2),
+        c: imageFactory(idleLeft3),
+      },
       right: {
         a: imageFactory(runRight1),
         b: imageFactory(runRight2),
@@ -240,7 +260,30 @@ class Player {
   draw(ctx) {
     switch(this.spriteStatus){
       case "standRight":
-        ctx.drawImage(this.sprites.right.a, this.position.x, this.position.y, this.width, this.height)
+        if (this.frame < 8) {
+          ctx.drawImage(this.sprites.standRight.a, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 16) {
+          ctx.drawImage(this.sprites.standRight.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 32) {
+          ctx.drawImage(this.sprites.standRight.c, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 40) {
+          ctx.drawImage(this.sprites.standRight.b, this.position.x, this.position.y, this.width, this.height) 
+        } else {
+          ctx.drawImage(this.sprites.standRight.a, this.position.x, this.position.y, this.width, this.height)
+        }
+        break
+      case "standLeft":
+        if (this.frame < 8) {
+          ctx.drawImage(this.sprites.standLeft.a, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 16) {
+          ctx.drawImage(this.sprites.standLeft.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 32) {
+          ctx.drawImage(this.sprites.standLeft.c, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 40) {
+          ctx.drawImage(this.sprites.standLeft.b, this.position.x, this.position.y, this.width, this.height) 
+        } else {
+          ctx.drawImage(this.sprites.standLeft.a, this.position.x, this.position.y, this.width, this.height)
+        }
         break
       case "standLeft":
         ctx.drawImage(this.sprites.left.a, this.position.x, this.position.y, this.width, this.height)
@@ -322,13 +365,13 @@ class Player {
 
 
 class Platform {
-  constructor({ x, y }, image) {
+  constructor({ x, y },{width, height}, image) {
     this.position = {
       x,
       y
     }
-    this.width = 400
-    this.height = 33
+    this.width = width
+    this.height = height
 
     this.image = image
   }
