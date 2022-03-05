@@ -94,15 +94,22 @@ function startGame(ctx, canvas) {
   }
 
   function animate() {
-    console.log(platforms)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-
 
     generics.forEach(generic => {
       generic.draw(ctx)
     })
+
+    // Render scoreboard
+    ctx.font = "36px 'Press Start 2P'";
+    ctx.fillStyle = "white"
+
+    // Fill text and center it horizontally0
+    ctx.fillText(score, CANVA_WIDTH/2 - ctx.measureText(score).width/2, 100)
+
     
+
+
     platforms.forEach(platform => {
       platform.draw(ctx)
 

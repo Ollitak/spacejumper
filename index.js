@@ -1,5 +1,7 @@
 import exports from "./src/main.js"
- 
+import "./index.css"
+
+
 const { startGame, CANVA_WIDTH, CANVA_HEIGHT } = exports
 
 const canvas = document.getElementById("canvas")
