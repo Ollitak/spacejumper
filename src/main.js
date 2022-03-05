@@ -3,6 +3,7 @@ import platformSmall from "../img/platforms/tile2.png"
 
 import background from "../img/arizona_background_1900x800.png"
 
+/*
 import idleRight1 from "../img/character/idle_right/armor__0000_idle_1.png"
 import idleRight2 from "../img/character/idle_right/armor__0001_idle_2.png"
 import idleRight3 from "../img/character/idle_right/armor__0002_idle_3.png"
@@ -10,6 +11,14 @@ import idleRight3 from "../img/character/idle_right/armor__0002_idle_3.png"
 import idleLeft1 from "../img/character/idle_left/armor__0000_idle_1.png"
 import idleLeft2 from "../img/character/idle_left/armor__0001_idle_2.png"
 import idleLeft3 from "../img/character/idle_left/armor__0002_idle_3.png"
+*/
+
+import walkRight1 from "../img/character/walk_right/armor__0006_walk_1.png"
+import walkRight2 from "../img/character/walk_right/armor__0007_walk_2.png"
+import walkRight3 from "../img/character/walk_right/armor__0008_walk_3.png"
+import walkRight4 from "../img/character/walk_right/armor__0009_walk_4.png"
+import walkRight5 from "../img/character/walk_right/armor__0010_walk_5.png"
+import walkRight6 from "../img/character/walk_right/armor__0011_walk_6.png"
 
 import runRight1 from "../img/character/run_right/armor__0012_run_1.png"
 import runRight2 from "../img/character/run_right/armor__0013_run_2.png"
@@ -42,6 +51,7 @@ const CANVA_HEIGHT = 800
 const GRAVITY = 1
 const JUMP_POWER = 25
 const HORIZONTAL_MOVEMENT_SPEED = 7
+const PLATFORM_MOVEMENT_SPEED = 10
 
 
 function startGame(ctx, canvas) {
@@ -59,29 +69,6 @@ function startGame(ctx, canvas) {
     left: false
   }
 
-  // Generates platform based on previous platform's coordinates
-  // x-coordinate is end of the platform instead of starting point
-  function platformGenerator(prevCords) {
-    let {x, y} = prevCords
-
-    // Coordinates for next platform tile
-    x = x + getRandomIntBetween(230, 280)
-    y = y + getRandomIntBetween(-180, 180)
-
-    // Ensure that platform is within the screen view
-    while (y > CANVA_HEIGHT - 200 || y < 100) {
-      y = y + getRandomIntBetween(-180, 180)
-    }
-
-    const r = getRandomIntBetween(0,2)
-    switch(r) {
-      case 0:
-        return new Platform({x, y}, {width: 513, height: 138}, imageFactory(platformLarge))
-      case 1: 
-        return new Platform({x, y}, {width: 263, height: 161}, imageFactory(platformSmall))
-    }
-  }
-
   function load() {
     score = 0
 
@@ -90,7 +77,7 @@ function startGame(ctx, canvas) {
     background1 = new Generic({ x: 0, y: 0 }, imageFactory(background))
     generics = [background1]
 
-    startingPlatform = new Platform({x: 50, y: 500}, {width: 513, height: 138}, imageFactory(platformLarge))    
+    startingPlatform = new Platform({x: 50, y: 500}, {width: 1000, height: 138}, imageFactory(platformLarge))    
     platforms = [startingPlatform]
 
     // Generate platforms
@@ -124,37 +111,29 @@ function startGame(ctx, canvas) {
           player.position.x < platform.position.x + platform.width - 20) {
             player.setYVelocity(0)
             
-            // After landing on platform, set player in stand mode
+            // After landing on platform, set player in walk mode
             if(player.spriteStatus === "jumpRight") {
-              player.spriteStatus = "standRight"
+              player.spriteStatus = "walkRight"
             }
             if(player.spriteStatus === "jumpLeft") {
-              player.spriteStatus = "standLeft"
+              player.spriteStatus = "walkRight"
             }
         }
 
-      /* 
-        Movement:
-        if (100 < player x position < 500) => move player
-        else => move platforms 
-      */
-      if (keysPressed.right && player.position.x < 600) {
-        player.setXVelocity(HORIZONTAL_MOVEMENT_SPEED)
-      } else if (keysPressed.left && player.position.x > 200) {
-        player.setXVelocity(-HORIZONTAL_MOVEMENT_SPEED)
-      } else {
-        player.velocity.x = 0
-
-        if(keysPressed.right) {
-          platform.move(-HORIZONTAL_MOVEMENT_SPEED)
-          score += HORIZONTAL_MOVEMENT_SPEED
-        } else if (keysPressed.left) {
-          platform.move(HORIZONTAL_MOVEMENT_SPEED)
-          score -= HORIZONTAL_MOVEMENT_SPEED
-        }
-      } 
+        platform.move(-PLATFORM_MOVEMENT_SPEED)
+        score += PLATFORM_MOVEMENT_SPEED
     })
 
+
+    //Movement logic
+    if (keysPressed.right && player.position.x < CANVA_WIDTH) {
+      player.setXVelocity(HORIZONTAL_MOVEMENT_SPEED)
+    } else if (keysPressed.left && player.position.x > 0) {
+      player.setXVelocity(-HORIZONTAL_MOVEMENT_SPEED)
+    } else {
+      player.velocity.x = 0
+    }
+    
 
     // Set sprite status to 'run' when right or left key is pressed AND player is not currently jumping
     if(keysPressed.right && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
@@ -181,7 +160,7 @@ function startGame(ctx, canvas) {
       case (87):
         if(player.spriteStatus !== "jumpRight" && player.spriteStatus !== "jumpLeft" && player.velocity.y === 1) {
           player.jump();
-          if(player.spriteStatus === "standRight" || player.spriteStatus === "runRight") {
+          if(player.spriteStatus === "walkRight" || player.spriteStatus === "runRight") {
             player.setSpriteStatus("jumpRight")
           } else {
             player.setSpriteStatus("jumpLeft")
@@ -203,11 +182,11 @@ function startGame(ctx, canvas) {
     switch(keyCode){
       case (68):
         keysPressed.right = false;
-        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft" ) player.setSpriteStatus("standRight")
+        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft" ) player.setSpriteStatus("walkRight")
         break
       case (65):
         keysPressed.left = false;
-        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") player.setSpriteStatus("standLeft")
+        if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") player.setSpriteStatus("walkRight")
         break
       default:
         null
@@ -230,15 +209,13 @@ class Player {
     };
 
     this.sprites = {
-      standRight: {
-        a: imageFactory(idleRight1),
-        b: imageFactory(idleRight2),
-        c: imageFactory(idleRight3),
-      },
-      standLeft: {
-        a: imageFactory(idleLeft1),
-        b: imageFactory(idleLeft2),
-        c: imageFactory(idleLeft3),
+      walkRight: {
+        a: imageFactory(walkRight1),
+        b: imageFactory(walkRight2),
+        c: imageFactory(walkRight3),
+        d: imageFactory(walkRight4),
+        e: imageFactory(walkRight5),
+        f: imageFactory(walkRight6)
       },
       right: {
         a: imageFactory(runRight1),
@@ -270,7 +247,7 @@ class Player {
       }
     }
     
-    this.spriteStatus = "standRight"
+    this.spriteStatus = "runRight"
     this.frame = 1
   }
 
@@ -286,34 +263,20 @@ class Player {
 
   draw(ctx) {
     switch(this.spriteStatus) {
-      case "standRight":
+      case "walkRight":
         if (this.frame < 8) {
-          ctx.drawImage(this.sprites.standRight.a, this.position.x, this.position.y, this.width, this.height)
+          ctx.drawImage(this.sprites.walkRight.a, this.position.x, this.position.y, this.width, this.height)
         } else if (this.frame < 16) {
-          ctx.drawImage(this.sprites.standRight.b, this.position.x, this.position.y, this.width, this.height)
+          ctx.drawImage(this.sprites.walkRight.b, this.position.x, this.position.y, this.width, this.height)
+        } else if (this.frame < 24) {
+          ctx.drawImage(this.sprites.walkRight.c, this.position.x, this.position.y, this.width, this.height)
         } else if (this.frame < 32) {
-          ctx.drawImage(this.sprites.standRight.c, this.position.x, this.position.y, this.width, this.height)
+          ctx.drawImage(this.sprites.walkRight.d, this.position.x, this.position.y, this.width, this.height)
         } else if (this.frame < 40) {
-          ctx.drawImage(this.sprites.standRight.b, this.position.x, this.position.y, this.width, this.height) 
+          ctx.drawImage(this.sprites.walkRight.e, this.position.x, this.position.y, this.width, this.height)
         } else {
-          ctx.drawImage(this.sprites.standRight.a, this.position.x, this.position.y, this.width, this.height)
+          ctx.drawImage(this.sprites.walkRight.f, this.position.x, this.position.y, this.width, this.height)
         }
-        break
-      case "standLeft":
-        if (this.frame < 8) {
-          ctx.drawImage(this.sprites.standLeft.a, this.position.x, this.position.y, this.width, this.height)
-        } else if (this.frame < 16) {
-          ctx.drawImage(this.sprites.standLeft.b, this.position.x, this.position.y, this.width, this.height)
-        } else if (this.frame < 32) {
-          ctx.drawImage(this.sprites.standLeft.c, this.position.x, this.position.y, this.width, this.height)
-        } else if (this.frame < 40) {
-          ctx.drawImage(this.sprites.standLeft.b, this.position.x, this.position.y, this.width, this.height) 
-        } else {
-          ctx.drawImage(this.sprites.standLeft.a, this.position.x, this.position.y, this.width, this.height)
-        }
-        break
-      case "standLeft":
-        ctx.drawImage(this.sprites.left.a, this.position.x, this.position.y, this.width, this.height)
         break
       case "runRight":
         if (this.frame < 8) {
@@ -443,7 +406,28 @@ function getRandomIntBetween(min, max) {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
+// Generates platform based on previous platform's coordinates
+// x-coordinate is end of the platform instead of starting point
+function platformGenerator(prevCords) {
+  let {x, y} = prevCords
 
+  // Coordinates for next platform tile
+  x = x + getRandomIntBetween(230, 280)
+  y = y + getRandomIntBetween(-180, 180)
+
+  // Ensure that platform is within the screen view
+  while (y > CANVA_HEIGHT-100 || y < 300) {
+    y = y + getRandomIntBetween(-180, 180)
+  }
+
+  const r = getRandomIntBetween(0,2)
+  switch(r) {
+    case 0:
+      return new Platform({x, y}, {width: 513, height: 138}, imageFactory(platformLarge))
+    case 1: 
+      return new Platform({x, y}, {width: 263, height: 161}, imageFactory(platformSmall))
+  }
+}
 
 
 const exportObject = {
