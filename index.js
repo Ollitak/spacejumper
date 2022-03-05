@@ -8,4 +8,4 @@ canvas.height = CANVA_HEIGHT
 
 let ctx = canvas.getContext("2d")
 
-startGame(ctx)
+startGame(ctx, canvas)

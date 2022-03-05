@@ -44,21 +44,42 @@ const JUMP_POWER = 25
 const HORIZONTAL_MOVEMENT_SPEED = 7
 
 
-function startGame(ctx) {
+function startGame(ctx, canvas) {
   let player
   let score // scroll offset i.e. how much platforms have scrolled left
 
-  let platform1
-  let platform2 
-  let platform3 
-  let platforms 
-  
-  let background1 
+  let background1
   let generics
-  
+
+  let startingPlatform
+  let platforms
+
   let keysPressed = {
     right: false,
     left: false
+  }
+
+  // Generates platform based on previous platform's coordinates
+  // x-coordinate is end of the platform instead of starting point
+  function platformGenerator(prevCords) {
+    let {x, y} = prevCords
+
+    // Coordinates for next platform tile
+    x = x + getRandomIntBetween(230, 280)
+    y = y + getRandomIntBetween(-180, 180)
+
+    // Ensure that platform is within the screen view
+    while (y > CANVA_HEIGHT - 200 || y < 100) {
+      y = y + getRandomIntBetween(-180, 180)
+    }
+
+    const r = getRandomIntBetween(0,2)
+    switch(r) {
+      case 0:
+        return new Platform({x, y}, {width: 513, height: 138}, imageFactory(platformLarge))
+      case 1: 
+        return new Platform({x, y}, {width: 263, height: 161}, imageFactory(platformSmall))
+    }
   }
 
   function load() {
@@ -66,16 +87,22 @@ function startGame(ctx) {
 
     player = new Player({x: 120, y: 300})
 
-    platform1 = new Platform({x: 50, y: 500}, {width: 513, height: 138}, imageFactory(platformLarge))
-    platform2 = new Platform({x: 800, y: 550}, {width: 263, height: 161}, imageFactory(platformSmall))
-    platform3 = new Platform({x: 1200, y: 650}, {width: 513, height: 138}, imageFactory(platformLarge))
-    platforms = [platform1, platform2, platform3]
-    
-    background1 = new Generic({ x: 0, y: 0 }, imageFactory(background) )
+    background1 = new Generic({ x: 0, y: 0 }, imageFactory(background))
     generics = [background1]
+
+    startingPlatform = new Platform({x: 50, y: 500}, {width: 513, height: 138}, imageFactory(platformLarge))    
+    platforms = [startingPlatform]
+
+    // Generate platforms
+    for(let i = 1; i < 30; i++) {
+      platforms[i] = platformGenerator(
+        {
+          x: platforms[i-1].position.x + platforms[i-1].width,
+          y: platforms[i-1].position.y
+        }
+      )
+    }
   }
-
-
 
   function animate() {
     requestAnimationFrame(animate)
@@ -97,10 +124,10 @@ function startGame(ctx) {
           player.position.x < platform.position.x + platform.width - 20) {
             player.setYVelocity(0)
             
+            // After landing on platform, set player in stand mode
             if(player.spriteStatus === "jumpRight") {
               player.spriteStatus = "standRight"
             }
-            
             if(player.spriteStatus === "jumpLeft") {
               player.spriteStatus = "standLeft"
             }
@@ -128,19 +155,17 @@ function startGame(ctx) {
       } 
     })
 
+
+    // Set sprite status to 'run' when right or left key is pressed AND player is not currently jumping
     if(keysPressed.right && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
       player.setSpriteStatus("runRight")
     } else if(keysPressed.left && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
       player.setSpriteStatus("runLeft")
     }    
 
-    // win
-    if (score > 2000) {
-      console.log("YOU WIN")
-    }
-
     // lose
-    if (player.position.y + player.height + player.velocity.y > CANVA_HEIGHT + 500) {
+    if (player.position.y + player.height + player.velocity.y > (CANVA_HEIGHT + 500)) {
+      console.log("lose trigger")
       load()
     }
 
@@ -149,7 +174,7 @@ function startGame(ctx) {
   }
 
   load()
-  animate(ctx, player)
+  animate()
   
   addEventListener("keydown", function({ keyCode }) {
     switch (keyCode){
@@ -189,6 +214,7 @@ function startGame(ctx) {
     }
   })
 }
+
 
 class Player {
   constructor({x, y}) {
@@ -244,23 +270,22 @@ class Player {
       }
     }
     
-    this.spriteStatus = "standRight" // ENUM: standRight, standLeft runRight, runLeft, jump
+    this.spriteStatus = "standRight"
     this.frame = 1
   }
 
   update(ctx) {
     this.position.y = this.position.y + this.velocity.y
     this.position.x = this.position.x + this.velocity.x
-    
+
     this.draw(ctx)
-    
     this.velocity.y = this.velocity.y + GRAVITY
     this.frame++
     if (this.frame === 49) this.frame = 1
   }
 
   draw(ctx) {
-    switch(this.spriteStatus){
+    switch(this.spriteStatus) {
       case "standRight":
         if (this.frame < 8) {
           ctx.drawImage(this.sprites.standRight.a, this.position.x, this.position.y, this.width, this.height)
@@ -413,6 +438,12 @@ function imageFactory(imageSource) {
   image.src = imageSource
   return image
 }
+
+function getRandomIntBetween(min, max) {
+  return Math.floor(Math.random() * (max - min) + min)
+}
+
+
 
 
 const exportObject = {
