@@ -44,14 +44,17 @@ import jumpLeft2 from "../img/character/jump_left/armor__0028_jump_2.png"
 import jumpLeft3 from "../img/character/jump_left/armor__0029_jump_3.png"
 import jumpLeft4 from "../img/character/jump_left/armor__0030_jump_4.png"
 
- 
+
 const CANVA_WIDTH = 1600
 const CANVA_HEIGHT = 800
 
 const GRAVITY = 1
 const JUMP_POWER = 25
 const HORIZONTAL_MOVEMENT_SPEED = 7
-const PLATFORM_MOVEMENT_SPEED = 10
+const PLATFORM_MOVEMENT_SPEED = 6
+
+let animationStopId
+let paused = false
 
 
 function startGame(ctx, canvas) {
@@ -77,11 +80,10 @@ function startGame(ctx, canvas) {
     background1 = new Generic({ x: 0, y: 0 }, imageFactory(background))
     generics = [background1]
 
-    startingPlatform = new Platform({x: 50, y: 500}, {width: 1000, height: 138}, imageFactory(platformLarge))    
+    startingPlatform = new Platform({x: 0, y: 770}, {width: 2000, height: 138}, imageFactory(platformLarge)) 
     platforms = [startingPlatform]
 
-    // Generate platforms
-    for(let i = 1; i < 30; i++) {
+    for(let i = 1; i < 5; i++) {
       platforms[i] = platformGenerator(
         {
           x: platforms[i-1].position.x + platforms[i-1].width,
@@ -92,8 +94,10 @@ function startGame(ctx, canvas) {
   }
 
   function animate() {
-    requestAnimationFrame(animate)
+    console.log(platforms)
     ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+
 
     generics.forEach(generic => {
       generic.draw(ctx)
@@ -103,8 +107,8 @@ function startGame(ctx, canvas) {
       platform.draw(ctx)
 
       // Collision detection between player and platform
-      // First 2 number adjust the gap between player and platform => higher the number, smaller the gap
-      // Second 2 number adjust where player falls off from platform => higher the number, earlier fall
+      // First 2 numbers adjust the gap between player and platform => higher the number, smaller the gap
+      // Second 2 numbers adjust where player falls off from platform => higher the number, earlier fall
       if (player.position.y + player.height <= platform.position.y + 12 &&
           player.position.y + player.height + player.velocity.y >= platform.position.y + 12 &&
           player.position.x + player.width > platform.position.x + 20 &&
@@ -122,6 +126,19 @@ function startGame(ctx, canvas) {
 
         platform.move(-PLATFORM_MOVEMENT_SPEED)
         score += PLATFORM_MOVEMENT_SPEED
+
+        // Dynamically delete already passed platforms simultaneously generating a new platform
+        if (platform.position.x + platform.width < -1000) {
+          const index = platforms.indexOf(platform)
+          platforms.splice(index, 1)
+
+          platforms = platforms.concat(platformGenerator(
+            {
+              x: platforms[platforms.length-1].position.x + platforms[platforms.length-1].width,
+              y: platforms[platforms.length-1].position.y
+            }
+          ))
+        }
     })
 
 
@@ -145,16 +162,18 @@ function startGame(ctx, canvas) {
     // lose
     if (player.position.y + player.height + player.velocity.y > (CANVA_HEIGHT + 500)) {
       console.log("lose trigger")
-      load()
+      return
+      //load()
     }
 
     // update player location
     player.update(ctx)
+    animationStopId = window.requestAnimationFrame(animate)
   }
 
   load()
-  animate()
-  
+  window.requestAnimationFrame(animate)
+
   addEventListener("keydown", function({ keyCode }) {
     switch (keyCode){
       case (87):
@@ -187,6 +206,14 @@ function startGame(ctx, canvas) {
       case (65):
         keysPressed.left = false;
         if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") player.setSpriteStatus("walkRight")
+        break
+      case (82):
+        if (paused) window.requestAnimationFrame(animate)
+        else window.cancelAnimationFrame(animationStopId)
+        paused = !paused
+        break
+      case (84):
+        load()
         break
       default:
         null
@@ -247,7 +274,7 @@ class Player {
       }
     }
     
-    this.spriteStatus = "runRight"
+    this.spriteStatus = "jumpRight"
     this.frame = 1
   }
 
@@ -371,8 +398,6 @@ class Platform {
   }
 
   draw(ctx) {
-    //ctx.fillStyle = "black"
-    //ctx.fillRect(this.position.x, this.position.y, this.width, this.height); // x, y, width, height
     ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height)
   }
 }
