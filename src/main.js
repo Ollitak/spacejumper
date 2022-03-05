@@ -72,6 +72,7 @@ function startGame(ctx, canvas) {
     left: false
   }
 
+
   function load() {
     score = 0
 
@@ -93,63 +94,48 @@ function startGame(ctx, canvas) {
     }
   }
 
-  function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    generics.forEach(generic => {
-      generic.draw(ctx)
-    })
-
-    // Render scoreboard
+  function renderScoreboard() {
     ctx.font = "36px 'Press Start 2P'";
     ctx.fillStyle = "white"
 
-    // Fill text and center it horizontally0
-    ctx.fillText(score, CANVA_WIDTH/2 - ctx.measureText(score).width/2, 100)
-
-    
+    ctx.fillText(score, CANVA_WIDTH/2 - ctx.measureText(score).width/2, 100)  
+  }
 
 
-    platforms.forEach(platform => {
-      platform.draw(ctx)
-
-      // Collision detection between player and platform
-      // First 2 numbers adjust the gap between player and platform => higher the number, smaller the gap
-      // Second 2 numbers adjust where player falls off from platform => higher the number, earlier fall
-      if (player.position.y + player.height <= platform.position.y + 12 &&
-          player.position.y + player.height + player.velocity.y >= platform.position.y + 12 &&
-          player.position.x + player.width > platform.position.x + 20 &&
-          player.position.x < platform.position.x + platform.width - 20) {
-            player.setYVelocity(0)
-            
-            // After landing on platform, set player in walk mode
-            if(player.spriteStatus === "jumpRight") {
-              player.spriteStatus = "walkRight"
-            }
-            if(player.spriteStatus === "jumpLeft") {
-              player.spriteStatus = "walkRight"
-            }
+  function collisionDetection(platform) {
+    if (player.position.y + player.height <= platform.position.y + 12 &&
+      player.position.y + player.height + player.velocity.y >= platform.position.y + 12 &&
+      player.position.x + player.width > platform.position.x + 20 &&
+      player.position.x < platform.position.x + platform.width - 20) {
+        player.setYVelocity(0)
+        
+        // After landing on platform, set player in walk mode
+        if(player.spriteStatus === "jumpRight") {
+          player.spriteStatus = "walkRight"
         }
-
-        platform.move(-PLATFORM_MOVEMENT_SPEED)
-        score += PLATFORM_MOVEMENT_SPEED
-
-        // Dynamically delete already passed platforms simultaneously generating a new platform
-        if (platform.position.x + platform.width < -1000) {
-          const index = platforms.indexOf(platform)
-          platforms.splice(index, 1)
-
-          platforms = platforms.concat(platformGenerator(
-            {
-              x: platforms[platforms.length-1].position.x + platforms[platforms.length-1].width,
-              y: platforms[platforms.length-1].position.y
-            }
-          ))
+        if(player.spriteStatus === "jumpLeft") {
+          player.spriteStatus = "walkRight"
         }
-    })
+    }
+  }
+
+  function dynamicPlatformDeletion(platform) {
+    if (platform.position.x + platform.width < -1000) {
+      const index = platforms.indexOf(platform)
+      platforms.splice(index, 1)
+
+      platforms = platforms.concat(platformGenerator(
+        {
+          x: platforms[platforms.length-1].position.x + platforms[platforms.length-1].width,
+          y: platforms[platforms.length-1].position.y
+        }
+      ))
+    }
+  }
 
 
-    //Movement logic
+  function setHorizontalVelocity() {
     if (keysPressed.right && player.position.x < CANVA_WIDTH) {
       player.setXVelocity(HORIZONTAL_MOVEMENT_SPEED)
     } else if (keysPressed.left && player.position.x > 0) {
@@ -157,29 +143,54 @@ function startGame(ctx, canvas) {
     } else {
       player.velocity.x = 0
     }
-    
+  }
 
-    // Set sprite status to 'run' when right or left key is pressed AND player is not currently jumping
+
+  // Set sprite status to 'run' when right or left key is pressed AND player is not currently jumping
+  function updateSpriteStatus() {
     if(keysPressed.right && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
       player.setSpriteStatus("runRight")
     } else if(keysPressed.left && player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") {
       player.setSpriteStatus("runLeft")
-    }    
+    }
+  }
 
-    // lose
+  
+  function checkLoseCondition() {
     if (player.position.y + player.height + player.velocity.y > (CANVA_HEIGHT + 500)) {
-      console.log("lose trigger")
-      return
+      return true
       //load()
     }
+  }
 
-    // update player location
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    generics.forEach(generic => {
+      generic.draw(ctx)
+    })
+
+    platforms.forEach(platform => {
+      platform.draw(ctx)
+      
+      collisionDetection(platform)
+      dynamicPlatformDeletion(platform)
+      
+      platform.move(-PLATFORM_MOVEMENT_SPEED)
+      score += PLATFORM_MOVEMENT_SPEED
+    })
+
+
+    renderScoreboard()
+    setHorizontalVelocity()
+    updateSpriteStatus()
+    if(checkLoseCondition()) return
+
     player.update(ctx)
     animationStopId = window.requestAnimationFrame(animate)
   }
 
-  load()
-  window.requestAnimationFrame(animate)
 
   addEventListener("keydown", function({ keyCode }) {
     switch (keyCode){
@@ -204,6 +215,7 @@ function startGame(ctx, canvas) {
     }
   })
 
+
   addEventListener("keyup", function({ keyCode }) {
     switch(keyCode){
       case (68):
@@ -226,6 +238,10 @@ function startGame(ctx, canvas) {
         null
     }
   })
+
+  
+  load()
+  window.requestAnimationFrame(animate)
 }
 
 
