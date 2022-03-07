@@ -47,6 +47,8 @@ import jumpLeft4 from "../img/character/jump_left/armor__0030_jump_4.png"
 
 const CANVA_WIDTH = 1600
 const CANVA_HEIGHT = 800
+const MENU_WIDTH = 800
+const MENU_HEIGHT = 400
 
 const GRAVITY = 1
 const JUMP_POWER = 25
@@ -54,25 +56,25 @@ const HORIZONTAL_MOVEMENT_SPEED = 7
 const PLATFORM_MOVEMENT_SPEED = 6
 
 let animationStopId
+let menuOn = true
 let paused = false
+let player
+let score = 0
+let highscore = 0
 
+let background1
+let generics
+
+let startingPlatform
+let platforms
+
+let keysPressed = {
+  right: false,
+  left: false
+}
 
 function startGame(ctx, canvas) {
-  let player
-  let score // scroll offset i.e. how much platforms have scrolled left
-
-  let background1
-  let generics
-
-  let startingPlatform
-  let platforms
-
-  let keysPressed = {
-    right: false,
-    left: false
-  }
-
-
+  
   function load() {
     score = 0
 
@@ -102,7 +104,7 @@ function startGame(ctx, canvas) {
     ctx.fillText(score, CANVA_WIDTH/2 - ctx.measureText(score).width/2, 100)  
   }
 
-
+  
   function collisionDetection(platform) {
     if (player.position.y + player.height <= platform.position.y + 12 &&
       player.position.y + player.height + player.velocity.y >= platform.position.y + 12 &&
@@ -119,6 +121,7 @@ function startGame(ctx, canvas) {
         }
     }
   }
+
 
   function dynamicPlatformDeletion(platform) {
     if (platform.position.x + platform.width < -1000) {
@@ -158,9 +161,51 @@ function startGame(ctx, canvas) {
   
   function checkLoseCondition() {
     if (player.position.y + player.height + player.velocity.y > (CANVA_HEIGHT + 500)) {
-      return true
-      //load()
+      if (score > highscore) highscore = score
+      menuOn = true
     }
+  }
+
+  
+  function renderMenu() {
+    drawBorder(ctx, CANVA_WIDTH/2-MENU_WIDTH/2, CANVA_HEIGHT/2-MENU_HEIGHT/2, MENU_WIDTH, MENU_HEIGHT)
+
+    ctx.fillStyle="black"
+    ctx.fillRect(CANVA_WIDTH/2-MENU_WIDTH/2, CANVA_HEIGHT/2-MENU_HEIGHT/2, MENU_WIDTH, MENU_HEIGHT)
+  
+    ctx.fillStyle = "white"
+    ctx.font = "36px 'Press Start 2P'";
+
+    let menuText = "WELCOME"
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 280)
+    menuText = "TO"
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 320)
+    menuText = "SPACEJUMPER"
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 360)
+
+    ctx.font = "26px 'Press Start 2P'";
+    ctx.fillStyle = "green"
+    menuText = "press 'S' to start the game"
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 440)
+
+    menuText = "press 'R' to pause the game"
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 480)
+
+    ctx.font = "20px 'Press Start 2P'";
+
+    ctx.fillStyle = "yellow"
+    menuText = "last game score " + score
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 550)
+    menuText = "current highscore " + highscore
+    ctx.fillText(menuText, CANVA_WIDTH/2 - ctx.measureText(menuText).width/2, 580)
+  }
+
+  function menuPlatformMovement(platforms) {
+    platforms.forEach(platform => {
+      platform.draw(ctx)
+      dynamicPlatformDeletion(platform)
+      platform.move(-PLATFORM_MOVEMENT_SPEED)
+    })
   }
 
 
@@ -171,28 +216,33 @@ function startGame(ctx, canvas) {
       generic.draw(ctx)
     })
 
-    platforms.forEach(platform => {
-      platform.draw(ctx)
-      
-      collisionDetection(platform)
-      dynamicPlatformDeletion(platform)
-      
-      platform.move(-PLATFORM_MOVEMENT_SPEED)
-      score += PLATFORM_MOVEMENT_SPEED
-    })
+    if (menuOn) {
+      menuPlatformMovement(platforms)
+      renderMenu()
+    } else {
+      platforms.forEach(platform => {
+        platform.draw(ctx)
+        
+        collisionDetection(platform)
+        dynamicPlatformDeletion(platform)
+        
+        platform.move(-PLATFORM_MOVEMENT_SPEED)
+        score += PLATFORM_MOVEMENT_SPEED
+      })
 
+      renderScoreboard()
+      setHorizontalVelocity()
+      updateSpriteStatus()
+      checkLoseCondition()
 
-    renderScoreboard()
-    setHorizontalVelocity()
-    updateSpriteStatus()
-    if(checkLoseCondition()) return
+      player.update(ctx)
+    }
 
-    player.update(ctx)
     animationStopId = window.requestAnimationFrame(animate)
   }
 
 
-  addEventListener("keydown", function({ keyCode }) {
+  window.addEventListener("keydown", function({ keyCode }) {
     switch (keyCode){
       case (87):
         if(player.spriteStatus !== "jumpRight" && player.spriteStatus !== "jumpLeft" && player.velocity.y === 1) {
@@ -216,7 +266,8 @@ function startGame(ctx, canvas) {
   })
 
 
-  addEventListener("keyup", function({ keyCode }) {
+  window.addEventListener("keyup", function({ keyCode }) {
+    console.log(keyCode)
     switch(keyCode){
       case (68):
         keysPressed.right = false;
@@ -231,7 +282,8 @@ function startGame(ctx, canvas) {
         else window.cancelAnimationFrame(animationStopId)
         paused = !paused
         break
-      case (84):
+      case (83):
+        if(menuOn) menuOn = false
         load()
         break
       default:
@@ -475,6 +527,12 @@ function platformGenerator(prevCords) {
     case 1: 
       return new Platform({x, y}, {width: 263, height: 161}, imageFactory(platformSmall))
   }
+}
+
+function drawBorder(ctx, xPos, yPos, width, height, thickness = 2)
+{
+  ctx.fillStyle = "white";
+  ctx.fillRect(xPos - (thickness), yPos - (thickness), width + (thickness * 2), height + (thickness * 2));
 }
 
 
