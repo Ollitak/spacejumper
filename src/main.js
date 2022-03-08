@@ -56,8 +56,11 @@ const HORIZONTAL_MOVEMENT_SPEED = 7
 const PLATFORM_MOVEMENT_SPEED = 6
 
 let animationStopId
-let menuOn = true
-let paused = false
+let gameStatus = {
+  menu: true,
+  game: false,
+  paused: false
+}
 let player
 let score = 0
 let highscore = 0
@@ -124,7 +127,7 @@ function startGame(ctx, canvas) {
 
 
   function dynamicPlatformDeletion(platform) {
-    if (platform.position.x + platform.width < -1000) {
+    if (platform.position.x + platform.width < -800) {
       const index = platforms.indexOf(platform)
       platforms.splice(index, 1)
 
@@ -162,7 +165,7 @@ function startGame(ctx, canvas) {
   function checkLoseCondition() {
     if (player.position.y + player.height + player.velocity.y > (CANVA_HEIGHT + 500)) {
       if (score > highscore) highscore = score
-      menuOn = true
+      gameStatus.menu = true
     }
   }
 
@@ -216,7 +219,7 @@ function startGame(ctx, canvas) {
       generic.draw(ctx)
     })
 
-    if (menuOn) {
+    if (gameStatus.menu) {
       menuPlatformMovement(platforms)
       renderMenu()
     } else {
@@ -278,12 +281,12 @@ function startGame(ctx, canvas) {
         if(player.spriteStatus != "jumpRight" && player.spriteStatus != "jumpLeft") player.setSpriteStatus("walkRight")
         break
       case (82):
-        if (paused) window.requestAnimationFrame(animate)
+        if (gameStatus.paused) window.requestAnimationFrame(animate)
         else window.cancelAnimationFrame(animationStopId)
-        paused = !paused
+        gameStatus.paused = !gameStatus.paused
         break
       case (83):
-        if(menuOn) menuOn = false
+        if(gameStatus.menu) gameStatus.menu = false
         load()
         break
       default:
